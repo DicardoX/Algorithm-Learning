@@ -1,3 +1,7 @@
+/** Problem description: Given two strings, you can delete several letters inside,
+ * then you need to get the longest common subsequence.**/
+
+
 #include <iostream>
 
 using namespace std;
@@ -37,9 +41,9 @@ int main() {
             cout<<LCS[i][j]<<" ";
         cout<<endl;
     }
-    
+
     /** Print the LCS length. **/
-    cout<<LCS[n1-1][n2-1];
+    cout<<LCS[n1][n2];
 
     return 0;
 }
