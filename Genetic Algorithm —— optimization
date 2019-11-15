@@ -1,0 +1,173 @@
+//
+//  main.cpp
+//  Genetic Algorithm
+//
+//  Created by 薛春宇 on 2019/11/14.
+//  Copyright © 2019 薛春宇. All rights reserved.
+//
+
+#include <iostream>
+#include "string.h"
+#include "ctime"
+#include "stdlib.h"
+
+using namespace std;
+
+const string GENES = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz 1234567890,.−;:!#%&/()=?@${[]}";
+const string TARGET = "Hello ,World! 19/11/09";
+
+const int Groupsize = 2000;
+const int Chromosomelength = 22;
+
+struct Chromosome{
+    char DNA[Chromosomelength];
+}group[Groupsize];
+
+void random_initi()
+{
+    srand((unsigned)time(NULL));
+    for(int i=0; i<Groupsize; i++)
+    {
+        for(int j=0; j<Chromosomelength; j++)
+        {
+            group[i].DNA[j] = GENES[rand()%(GENES.size())];
+        }
+    }
+}
+
+/* To get the fitness score of a chromosome. */
+int get_fitness_score(Chromosome &obj)
+{
+    int res = 0;
+    for(int i=0; i<Chromosomelength; i++){
+        if(obj.DNA[i] == TARGET[i])
+            res++;
+    }
+    return res;
+}
+
+bool target_succeeded(Chromosome &obj){
+    return get_fitness_score(obj) == Chromosomelength;
+}
+
+void caculate_possibility(double arr[])
+{
+    double total = 0;
+    for(int i=0; i<Groupsize; i++)
+        total += get_fitness_score(group[i]);
+    
+    for(int i=0; i<Groupsize; i++)
+        arr[i] = get_fitness_score(group[i])/total;
+}
+
+Chromosome &get_optmize()                   /* NO PROBLEM. */
+{
+    if(Groupsize == 1)  return group[0];
+    
+    int number = 0;
+    for(int i=1; i<Groupsize; i++)
+    {
+        if(get_fitness_score(group[i])> get_fitness_score(group[number]))
+            number = i;
+    }
+    return group[number];
+}
+
+void delete_impossible_members(int &qualified_number, double arr[], double arr1[], Chromosome f[])
+{
+    for(int i=0; i<Groupsize; i++)
+    {
+        if(arr[i] != 0)
+        {
+            for(int j=0; j<Chromosomelength; j++){
+                f[qualified_number].DNA[j] = group[i].DNA[j];
+                arr1[qualified_number] = arr[i];
+            }
+            qualified_number++;
+        }
+    }
+}
+
+void mate(int &vis1, int &vis2, int &qualified_number, int &position, Chromosome f[])
+{
+    srand((unsigned)time(NULL));
+    for(int i=1; i<Groupsize; i++)                          // if put the best father to the next, 0 -> 1
+    {
+        vis1 = rand()%(qualified_number+1);
+        vis2 = rand()%(qualified_number+1);
+        position = rand()%(Chromosomelength+1);             // randomly produce a position
+        
+        for(int j=0; j<position; j++)
+            group[i].DNA[j] = f[vis1].DNA[j];
+        for(int j=position; j<Chromosomelength; j++)
+            group[i].DNA[j] = f[vis2].DNA[j];
+    }
+}
+
+void crossover()
+{
+    /* First, calculate the possibility of each father. */
+    double possibility[Groupsize];
+    caculate_possibility(possibility);
+    
+    /* Next, we delete the impossible chromosome. */
+    int qualified_number = 0;
+    Chromosome fatherGroup[Groupsize];
+    double modified_possibility[Groupsize];
+    delete_impossible_members(qualified_number, possibility, modified_possibility, fatherGroup);
+    
+    /* We put the best father to the next generation. */
+    for(int i=0; i<Chromosomelength; i++)
+        group[0].DNA[i] = get_optmize().DNA[i];
+    
+    /* Then, we randomly mate the father groups. */
+    srand((unsigned)time(NULL));
+    int vis1, vis2;
+    int position;
+    mate(vis1, vis2, qualified_number, position, fatherGroup);
+    
+}
+
+void mute_opration(char &s)
+{
+    srand((unsigned)time(NULL));
+    s = GENES[rand()%GENES.size()];
+}
+
+void mutation()
+{
+    srand((unsigned)time(NULL));
+    
+    for(int i=0; i<Groupsize; i++)
+    {
+        for(int j=0; j<Chromosomelength; j++)
+        {
+            if(group[i].DNA[j] != TARGET[j] && rand()%100 < 2)  /* mute rate is equal to 0.02 */
+                mute_opration(group[i].DNA[j]);
+        }
+    }
+}
+
+int main()
+{
+    int generation = 0;
+    random_initi();
+    
+    while(true)
+    {
+        crossover();
+        mutation();
+        generation++;
+        cout<<"Generation "<<generation<<" String:"<<' ';
+        for(int i=0; i<Chromosomelength; i++)
+            cout<<get_optmize().DNA[i];
+        cout<<'\n'<<'\n';
+        
+        if(target_succeeded(get_optmize()) || generation >= 5000)
+           break;
+        
+    }
+    
+    return 0;
+}
+
