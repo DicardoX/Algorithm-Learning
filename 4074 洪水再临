@@ -1,0 +1,94 @@
+*******************************
+4074. 洪水再临
+Description
+​ 又是一场热带飓风席卷了圣安东尼奥城，强降水使Oven家的农场饱受摧残。 Oven家农场为一片长度为M,宽度为N的矩形网格区域，每个网格位置(a,b)面积为1，
+其海拔高度由一个M*N的矩阵表示。 为迎合求生游戏盛行之风，Oven将农场开垦在了视野良好的高地上，其地势高于周边土地，因此农场边界不会积水。 
+请帮助Oven计算出农场内最大积水体积
+
+Input Format
+第一行,两个空格隔开的整数M,N。 (1 <= M,N <= 100) 第2 ~ M+1行输出一个M*N的矩阵。 (0 <= 高度 <= 10000)
+
+Output Format
+一行，一个数，表示农场内最大积水体积。
+
+Sample Input
+5 4
+6 3 7 3
+5 3 2 8
+4 4 7 5
+8 2 8 6
+4 5 3 0
+
+Sample Output
+3
+
+******************************************************************************************************************************
+
+#include <iostream>
+
+using namespace std;
+int Map[107][107];
+
+void initi(int M, int N)
+{
+    for(int i=0; i<M; i++){
+        for(int j=0; j<N; j++)
+            cin>>Map[i][j];
+    }
+}
+
+int getMin(int a, int b, int c, int d)
+{
+    int res = a;
+    if(res > b)
+        res = b;
+    if(res > c)
+        res = c;
+    if(res > d)
+        res = d;
+    return res;
+}
+
+int main()
+{
+    int M, N;
+    cin>>M>>N;
+    initi(M, N);
+
+    long long int total = 0;
+    bool isfilled = false;
+    bool already_op;
+    int tmp;
+    while(!isfilled)
+    {
+        already_op = false;
+        for(int i=0; i<M; i++)
+        {
+            for(int j=0; j<N; j++)
+            {
+                if(i == 0 || i == M-1 || j == 0 || j == N-1)
+                    continue;
+                if(Map[i-1][j] <= Map[i][j])
+                    continue;
+                if(Map[i][j-1] <= Map[i][j])
+                    continue;
+                if(Map[i+1][j] <= Map[i][j])
+                    continue;
+                if(Map[i][j+1] <= Map[i][j])
+                    continue;
+                tmp = getMin(Map[i-1][j], Map[i][j-1], Map[i+1][j], Map[i][j+1]);
+                total += tmp - Map[i][j];
+                Map[i][j] = tmp;
+                already_op = true;
+                break;
+            }
+            if(already_op)
+                break;
+        }
+        if(!already_op)
+            isfilled = true;
+    }
+    cout<<total;
+
+    return 0;
+}
