@@ -32,3 +32,40 @@ int main(){
     return 0;
 }
 /* ************************ */
+
+#include <iostream>
+
+using namespace std;
+
+int V, N;
+int val[1000], Size[1000];
+int newRes[10000];
+
+inline int Max(int a, int b)
+{
+    return (a > b)? a : b;
+}
+
+int main(){
+    ios_base::sync_with_stdio(false);
+    cin.tie(0); cout.tie(0);
+
+    cin >> V >> N;
+    for(int i=0; i<N; i++)
+        cin >> Size[i] >> val[i];
+
+    int res = 0;
+    for(int i=0; i<N; i++)
+    {
+        for(int j=Size[i]; j<=V; j++)
+        {
+            newRes[j] = Max(newRes[j], newRes[j-Size[i]] + val[i]);
+        }
+        if(res < newRes[V])
+            res = newRes[V];
+    }
+    cout<< res;
+
+    return 0;
+}
+
